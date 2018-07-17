@@ -161,15 +161,31 @@ https://github.com/mroderick/PubSubJS
             return false;
         }
 
+        // true, if there were no previous subscriptions to this message
+        var isFirstSubscription = false;
+
         // message is not registered yet
         if ( !messages.hasOwnProperty( message ) ){
             messages[message] = {};
+            isFirstSubscription = true;
         }
 
         // forcing token as String, to allow for future expansions without breaking usage
         // and allow for easy use as key names for the 'messages' object
         var token = 'uid_' + String(++lastUid);
         messages[message][token] = func;
+
+        // do not publish on subscriptions to special messages
+        if (!message.startsWith("@")) {
+            var subscriptionData = {
+                func: func,
+                token: token
+            };
+            if (isFirstSubscription) {
+                publish("@firstsub." + message, subscriptionData);
+            }
+            publish("@sub." + message, subscriptionData);
+        }
 
         // return token for unsubscribing
         return token;
@@ -199,11 +215,17 @@ https://github.com/mroderick/PubSubJS
     /*Public: Clear subscriptions by the topic
 	*/
     PubSub.clearSubscriptions = function clearSubscriptions(topic){
-        var m;
+        var m, unsubbedAny = false;
         for (m in messages){
             if (messages.hasOwnProperty(m) && m.indexOf(topic) === 0){
                 delete messages[m];
+                unsubbedAny = true;
             }
+        }
+        // do not publish on unsubscriptions from special messages
+        if (unsubbedAny && !topic.startsWith("@")) {
+            publish("@unsub." + topic, {});
+            publish("@lastunsub." + topic, {});
         }
     };
 
@@ -244,6 +266,18 @@ https://github.com/mroderick/PubSubJS
             result = false,
             m, message, t;
 
+        var checkLastUnsub = function(m) {
+                if (!hasKeys(messages[m])) {
+                    var data = {};
+                    if (isToken) {
+                        data.token = value;
+                    } else {
+                        data.func = value;
+                    }
+                    publish("@lastunsub." + m, data);
+                }
+            };
+
         if (isTopic){
             PubSub.clearSubscriptions(value);
             return;
@@ -254,8 +288,11 @@ https://github.com/mroderick/PubSubJS
                 message = messages[m];
 
                 if ( isToken && message[value] ){
+                    var func = message[value];
                     delete message[value];
                     result = value;
+                    publish("@unsub." + m, {token: value, func: func});
+                    checkLastUnsub(m);
                     // tokens are unique, so we can just stop here
                     break;
                 }
@@ -265,8 +302,10 @@ https://github.com/mroderick/PubSubJS
                         if (message.hasOwnProperty(t) && message[t] === value){
                             delete message[t];
                             result = true;
+                            publish("@unsub." + m, {token: t, func: value});
                         }
                     }
+                    checkLastUnsub(m);
                 }
             }
         }
