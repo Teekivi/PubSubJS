@@ -210,6 +210,7 @@ https://github.com/mroderick/PubSubJS
 	 */
     PubSub.clearAllSubscriptions = function clearAllSubscriptions(){
         messages = {};
+        publish("@unsuball", {});
     };
 
     /*Public: Clear subscriptions by the topic
