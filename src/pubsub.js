@@ -178,8 +178,8 @@ https://github.com/mroderick/PubSubJS
         // do not publish on subscriptions to special messages
         if (!message.startsWith("@")) {
             var subscriptionData = {
-                func: func,
-                token: token
+                token: token,
+                func: func
             };
             if (isFirstSubscription) {
                 publish("@firstsub." + message, subscriptionData);
@@ -267,15 +267,9 @@ https://github.com/mroderick/PubSubJS
             result = false,
             m, message, t;
 
-        var checkLastUnsub = function(m) {
+        var checkLastUnsub = function(m, unsubData) {
                 if (!hasKeys(messages[m])) {
-                    var data = {};
-                    if (isToken) {
-                        data.token = value;
-                    } else {
-                        data.func = value;
-                    }
-                    publish("@lastunsub." + m, data);
+                    publish("@lastunsub." + m, unsubData);
                 }
             };
 
@@ -285,6 +279,10 @@ https://github.com/mroderick/PubSubJS
         }
 
         for ( m in messages ){
+            // skip special topics
+            if (m.startsWith("@")) {
+                continue;
+            }
             if ( messages.hasOwnProperty( m ) ){
                 message = messages[m];
 
@@ -293,20 +291,24 @@ https://github.com/mroderick/PubSubJS
                     delete message[value];
                     result = value;
                     publish("@unsub." + m, {token: value, func: func});
-                    checkLastUnsub(m);
+                    checkLastUnsub(m, {token: value, func: func});
                     // tokens are unique, so we can just stop here
                     break;
                 }
 
                 if (isFunction) {
+                    var lastDeletedToken = null;
                     for ( t in message ){
                         if (message.hasOwnProperty(t) && message[t] === value){
                             delete message[t];
+                            lastDeletedToken = t;
                             result = true;
                             publish("@unsub." + m, {token: t, func: value});
                         }
                     }
-                    checkLastUnsub(m);
+                    if (lastDeletedToken) {
+                        checkLastUnsub(m, {token: lastDeletedToken, func: value});
+                    }
                 }
             }
         }
