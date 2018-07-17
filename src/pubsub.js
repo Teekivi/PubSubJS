@@ -176,15 +176,15 @@ https://github.com/mroderick/PubSubJS
         messages[message][token] = func;
 
         // do not publish on subscriptions to special messages
-        if (!message.startsWith("@")) {
+        if (!message.startsWith('@')) {
             var subscriptionData = {
                 token: token,
                 func: func
             };
             if (isFirstSubscription) {
-                publish("@firstsub." + message, subscriptionData);
+                publish('@firstsub.' + message, subscriptionData);
             }
-            publish("@sub." + message, subscriptionData);
+            publish('@sub.' + message, subscriptionData);
         }
 
         // return token for unsubscribing
@@ -210,7 +210,7 @@ https://github.com/mroderick/PubSubJS
 	 */
     PubSub.clearAllSubscriptions = function clearAllSubscriptions(){
         messages = {};
-        publish("@unsuball", {});
+        publish('@unsuball', {});
     };
 
     /*Public: Clear subscriptions by the topic
@@ -224,9 +224,9 @@ https://github.com/mroderick/PubSubJS
             }
         }
         // do not publish on unsubscriptions from special messages
-        if (unsubbedAny && !topic.startsWith("@")) {
-            publish("@unsub." + topic, {});
-            publish("@lastunsub." + topic, {});
+        if (unsubbedAny && !topic.startsWith('@')) {
+            publish('@unsub.' + topic, {});
+            publish('@lastunsub.' + topic, {});
         }
     };
 
@@ -268,10 +268,10 @@ https://github.com/mroderick/PubSubJS
             m, message, t;
 
         var checkLastUnsub = function(m, unsubData) {
-                if (!hasKeys(messages[m])) {
-                    publish("@lastunsub." + m, unsubData);
-                }
-            };
+            if (!hasKeys(messages[m])) {
+                publish('@lastunsub.' + m, unsubData);
+            }
+        };
 
         if (isTopic){
             PubSub.clearSubscriptions(value);
@@ -280,7 +280,7 @@ https://github.com/mroderick/PubSubJS
 
         for ( m in messages ){
             // skip special topics
-            if (m.startsWith("@")) {
+            if (m.startsWith('@')) {
                 continue;
             }
             if ( messages.hasOwnProperty( m ) ){
@@ -290,7 +290,7 @@ https://github.com/mroderick/PubSubJS
                     var func = message[value];
                     delete message[value];
                     result = value;
-                    publish("@unsub." + m, {token: value, func: func});
+                    publish('@unsub.' + m, {token: value, func: func});
                     checkLastUnsub(m, {token: value, func: func});
                     // tokens are unique, so we can just stop here
                     break;
@@ -303,7 +303,7 @@ https://github.com/mroderick/PubSubJS
                             delete message[t];
                             lastDeletedToken = t;
                             result = true;
-                            publish("@unsub." + m, {token: t, func: value});
+                            publish('@unsub.' + m, {token: t, func: value});
                         }
                     }
                     if (lastDeletedToken) {
