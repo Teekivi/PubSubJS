@@ -142,7 +142,14 @@ PubSub.publish('car.sell', {newOwner: 'someone else'});
 ### Special message topics (listen to subscribes/unsubscribes)
 
 ```javascript
-// create a function to receive topics
+// Create a function to receive topics
+// Parameters:
+//   msg: topic subscribed to / unsubscribed from
+//        prefixed with a special message topic (@sub, @unsub, etc...)
+//   data: { token: <subscription token>, func: <subscribing function> }
+// In certain cases (on clearSubscriptions and clearAllSubscriptions)
+// the resulting @unsub, @lastunsub and @unsuball messages carry no data
+// (i.e. the data is {})
 var mySubscriber = function(msg, data) {
     console.log(msg, data);
 };
@@ -172,13 +179,6 @@ PubSub.subscribe('@lastunsub.car', mySubscriber);
 
 // listen to clearAllSubscriptions
 PubSub.subscribe('@unsuball', mySubscriber);
-
-// When receiving an (un)subscription message, the subscriber receives
-// an object as the data, which is as follows:
-//   { token: <subscription token>, func: <subscribing function> }
-// In certain cases (on clearSubscriptions and clearAllSubscriptions)
-// the resulting @unsub, @lastunsub and @unsuball messages carry no data
-// (i.e. the data is {})
 ```
 
 ## Tips
