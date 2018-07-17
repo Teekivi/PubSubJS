@@ -139,6 +139,48 @@ PubSub.publish('car.sell', {newOwner: 'someone else'});
 // subscribes to the 'car.drive' topic
 ```
 
+### Special message topics (listen to subscribes/unsubscribes)
+
+```javascript
+// create a function to receive topics
+var mySubscriber = function(msg, data) {
+    console.log(msg, data);
+};
+
+// listen to all (un)subscriptions
+PubSub.subscribe('@sub', mySubscriber);
+PubSub.subscribe('@unsub', mySubscriber);
+
+// listen to (un)subscriptions to/from specific topics
+// and their subtopics
+PubSub.subscribe('@sub.car', mySubscriber);
+PubSub.subscribe('@unsub.car', mySubscriber);
+
+// listen to the first subscription to a topic
+// mySubscriber is called on the first subscription to
+// a) any topic:
+PubSub.subscribe('@firstsub', mySubscriber);
+// b) a specific topic or one of its subtopics:
+PubSub.subscribe('@firstsub.car', mySubscriber);
+
+// listen to the last unsubscription from a topic
+// mySubscription is called if there are no subscriptions left to
+// a) any topic:
+PubSub.subscribe('@lastunsub', mySubscriber);
+// b) a specific topic or one of its subtopics:
+PubSub.subscribe('@lastunsub.car', mySubscriber);
+
+// listen to clearAllSubscriptions
+PubSub.subscribe('@unsuball', mySubscriber);
+
+// When receiving an (un)subscription message, the subscriber receives
+// an object as the data, which is as follows:
+//   { token: <subscription token>, func: <subscribing function> }
+// In certain cases (on clearSubscriptions and clearAllSubscriptions)
+// the resulting @unsub, @lastunsub and @unsuball messages carry no data
+// (i.e. the data is {})
+```
+
 ## Tips
 
 Use "constants" for topics and not string literals. PubSubJS uses strings as topics, and will happily try to deliver your topics with ANY topic. So, save yourself from frustrating debugging by letting the JavaScript engine complain
