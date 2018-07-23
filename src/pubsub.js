@@ -162,12 +162,12 @@ https://github.com/mroderick/PubSubJS
         }
 
         // true, if there were no previous subscriptions to this message
-        var isFirstSubscription = false;
+        var isFirstSubscription = !messages.hasOwnProperty(String(message)) ||
+                !hasKeys(messages[String(message)]);
 
         // message is not registered yet
         if ( !messages.hasOwnProperty( message ) ){
             messages[message] = {};
-            isFirstSubscription = true;
         }
 
         // forcing token as String, to allow for future expansions without breaking usage

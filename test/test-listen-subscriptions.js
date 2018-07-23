@@ -98,6 +98,54 @@ describe('Listening to (un)subscriptions', function() {
 
             done();
         });
+
+        it('should call @firstsub after unsubscribing all from topic by token and re-subscribing', function(done) {
+            PubSub.unsubscribe('other.othersub');
+            this.clock.tick(1);
+
+            var localToken1 = PubSub.subscribe('other.othersub', sinon.stub());
+            var localToken2 = PubSub.subscribe('other.othersub', sinon.stub());
+            this.clock.tick(1);
+
+            sinon.assert.callCount(this.spy7, 2);
+
+            PubSub.unsubscribe(localToken1);
+            PubSub.unsubscribe(localToken2);
+            this.clock.tick(1);
+
+            PubSub.subscribe('other.othersub', sinon.stub());
+            this.clock.tick(1);
+
+            sinon.assert.callCount(this.spy7, 3);
+
+            PubSub.unsubscribe('other.othersub');
+            this.clock.tick(1);
+
+            done();
+        });
+
+        it('should call @firstsub after unsubscribing all from topic by function and re-subscribing', function(done) {
+            PubSub.unsubscribe('other.othersub');
+            this.clock.tick(1);
+
+            var stub1 = sinon.stub();
+            var stub2 = sinon.stub();
+            PubSub.subscribe('other.othersub', stub1);
+            PubSub.subscribe('other.othersub', stub2);
+            this.clock.tick(1);
+
+            sinon.assert.callCount(this.spy7, 2);
+
+            PubSub.unsubscribe(stub1);
+            PubSub.unsubscribe(stub2);
+            this.clock.tick(1);
+
+            PubSub.subscribe('other.othersub', sinon.stub());
+            this.clock.tick(1);
+
+            sinon.assert.callCount(this.spy7, 3);
+            done();
+        });
     });
 
     describe('unsubscribe method', function() {
